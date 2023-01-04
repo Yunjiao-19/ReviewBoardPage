@@ -1,0 +1,129 @@
+{% extends "reviews/reviewable_base.html" %}
+{% load i18n djblets_deco djblets_utils djblets_js pipeline reviewtags staticfiles difftags %}
+
+{% block title %}{{review_request_details.summary}} | {% trans "Review Request" %}{% endblock %}
+
+{% block css %}
+{{block.super}}
+
+{%  if siteconfig_settings.diffviewer_show_trailing_whitespace %}
+<style type="text/css">
+  .ew { background: #ee3434; }
+</style>
+{%  endif %}
+{% endblock css %}
+
+
+
+{% block js-page-view-type %}RB.CodeReviewableView{% endblock %}
+{% block js-page-model-type %}RB.CodeViewerPage{% endblock %}
+{% block js-page-model-attrs %}
+{
+  {{context_code|json_dumps_items}},
+  {% reviewable_page_model_data %}
+}
+{% endblock js-page-model-attrs %}
+
+
+
+{% block content %}
+<div id="review-request">
+ <div id="review-request-banners"></div>
+{% display_review_request_trophies review_request %}
+ <div class="review-request">
+{%   include "reviews/review_request_header.html" %}
+
+
+{% definevar 'line_fmt' %}
+
+    <tr line=%(chunk_index)s>
+      <th>%(chunk_index)s</th>
+      <td>
+        <pre>%(line)s</pre>
+      </td>
+    </tr>
+
+
+{% enddefinevar %}
+
+  <div class="review-request-body">
+    <h2 class="code-header">Code Browser</h2>
+    {% comment %} breadcrumbs {% endcomment %}
+    <div class="breadcrumbs-container">
+      {% for item in breadcrumbs %}
+        {%if item.tail %}
+          <span>{{item.name}}</span>
+        {%else%}
+          <a href="{{ item.url }}">{{item.name}}</a>
+            <span>/</span>
+        {%endif%}
+
+      {%endfor%}
+    </div>
+
+    {% if is_blob %}
+      {% if is_touched %}
+        <div class="touched_warning"><span>This file has been <strong class="highlight-warning">touched</strong>. For the changed content, please see in <a href="{{diff_url}}"><strong class="highlight-warning">Diff</strong></a></span></div>
+      {%endif%}
+        <div>
+          <table id="blobs" class="sidebyside"></table>
+        </div>
+    {% else %}
+      <div class="code_browser_list">
+        <table>
+          {%for item in file_list %}
+            <tr>
+              <td style="width:20px;">
+              {%if item.type == 'blob'%}
+                  {% load static %} <img src="{%static 'rb/images/file_click.svg' %}" style="width:20px;height:20px;margin-top: -1px;"/>
+                {%else%}
+                  {% load static %} <img src="{%static "rb/images/open_folder.svg" %}" style="width:20px;height:20px;margin-top: -1px;" />
+                  {%endif%}
+              </td>
+          {%if item.is_touched%}
+
+            <td class="touched-info" title='This is a touched file'>
+              <a class="touched-icon"></a>
+            </td>
+            <td class="file-info" title='This is a touched file'>
+              <a href="{{item.absolute_url}}">{{item.name}}</a>
+            </td>
+
+          {%else%}
+
+            <td class="touched-info"></td>
+            <td class="file-info">
+              <a href="{{item.absolute_url}}">{{item.name}}</a>
+            </td>
+
+          {%endif%}
+              </tr>
+          {%endfor%}
+        </table>
+      </div>
+    {% endif %}
+    
+  </div>
+ </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts-post %}
+{{block.super}}
+{%  javascript 'review-request-page' %}
+{% endblock scripts-post %}
+
+
+{% block js_extensions %}
+{%  comment %}
+We have to load all of the review request fields after the extensions JS,
+because extension-provided field classes have to be defined at the time that
+this code runs.
+{%  endcomment %}
+
+{{block.super}}
+
+
+{% endblock %}
+

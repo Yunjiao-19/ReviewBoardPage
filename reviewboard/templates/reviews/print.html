@@ -1,0 +1,671 @@
+{% extends "reviews/reviewable_base.html" %}
+
+{% load i18n djblets_utils djblets_deco djblets_js pipeline reviewtags staticfiles %}
+
+{% block title %}
+Print Preview
+{% endblock %}
+
+{% block css %}
+{{ block.super }}
+{% stylesheet 'print' %}
+{% endblock css %}
+
+{% block content %}
+<!-- <h1>PRINT CONTENT HERE</h1> -->
+<link rel="stylesheet" href="//apps.bdimg.com/libs/jqueryui/1.10.4/css/jquery-ui.min.css">
+<script src="//apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="//apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+
+<script type="text/javascript">
+  var len_diffset = Number('{{len_diffset}}');
+  var slider_start = Number('{{slider_start}}');
+  var slider_end = Number('{{slider_end}}');
+  var num_files = Number('{{num_files}}');
+  var issues_exist = '{{issues_exist}}';
+</script>
+<script>
+  // $("#treeview").hummingbird();
+
+function setCheckBox() {
+  var open = document.getElementById("open");
+  var resolved = document.getElementById("resolved");
+  var dropped = document.getElementById("dropped");
+  var verif = document.getElementById("verif");
+
+  if (issues_exist === "False") {
+    open.disabled = true;
+    resolved.disabled = true;
+    dropped.disabled = true;
+    verif.disabled = true;
+  }
+  else {
+    open.removeAttribute("disabled");
+    resolved.removeAttribute("disabled");
+    dropped.removeAttribute("disabled");
+    verif.removeAttribute("disabled"); 
+  }
+}
+window.onload = setCheckBox;
+
+  $(function () {
+    $("#slider-range").slider({
+      range: true,
+      min: 0,
+      max: len_diffset,
+      values: [slider_start, slider_end],
+      slide: function (event, ui) {
+        if (ui.values[0] == ui.values[1])
+          return false;
+        $("#amount").val(ui.values[0] + " - " + ui.values[1]);
+      }
+    });
+    $("#amount").val($("#slider-range").slider("values", 0) +
+      " - " + $("#slider-range").slider("values", 1));
+  });
+
+  function confirmPrint(e) {
+    let text = "Downloading " + num_files + " files. Continue?";
+    if (confirm(text) == true) {
+      e.href='data:text/html;charset=UTF-8,'+encodeURIComponent(document.getElementById('right').innerHTML);
+      e.download="review.html";
+    } else{
+      e.href="#";
+      e.removeAttribute("download");
+    }
+  }
+
+  function commColorClick(thisId) {
+    console.log(thisId)
+    var buttonList = ["with_file", "separate"];
+    for (var i = 0; i < buttonList.length; i++) {
+    if (buttonList[i] === thisId) {
+      buttonList.splice(i, 1);
+    }
+  }
+    var elem = document.getElementById(thisId);
+    elem.style.background = "#A48E41";
+
+    for (var i = 0; i < buttonList.length; i++) {
+      var otherElem = document.getElementById(buttonList[i]);
+      otherElem.style.background = "white";
+    }
+  }
+  function colorClick(thisId) {
+    var buttonList = ["all", "open", "dropped", "verif", "resolved"];
+    for (var i = 0; i < buttonList.length; i++) {
+      if (buttonList[i] === thisId) {
+        buttonList.splice(i, 1);
+      }
+    }
+    var elem = document.getElementById(thisId);
+    elem.style.background = "#A48E41";
+
+    for (var i = 0; i < buttonList.length; i++) {
+      var otherElem = document.getElementById(buttonList[i]);
+      otherElem.style.background = "white";
+    }
+  }
+  function printOffClick(thisId) {
+    var elem = document.getElementById(thisId);
+    elem.style.background = "#E3D7AD";
+    }  
+
+</script>
+
+<div id="content">
+
+  <!-- Start of Left Panel -->
+  <div id="left">
+    <div id="top" >
+      <!-- Back Button -->
+      <button id="x_but">
+        <a href = "/r/{{ review_request.display_id }}"> <span style ="filter: brightness(0%);margin: 0px 0px 1px 0px;" class="rb-icon rb-icon-remove-widget"></span> </a>
+      </button>
+      <h2 style="display: inline; text-align: center; margin: 0px 0px 0px 25.25px;">Print Configurations</h2>
+    </div>
+    <form action="{% url 'print' review_request_id=id%}" method="GET">
+    
+    <div id="bot">
+      <!-- Comment Options -->
+      <div id="comment_options">
+        <h1>Comment Options</h1>
+        <!-- Tooltip -->
+        <div class="tip">(?)
+          <span class="tiptext">
+            Display comments with file diffs or in a separate section. <br>
+            Displayed separately by default.
+          </span>
+        </div>
+        
+        <br><br>
+      
+        {% if with_file_flag %}
+        <input type="checkbox" id="with_file" name="with_file" value="with_file" checked>
+        {% else %}
+        <input type="checkbox" id="with_file" name="with_file" value="with_file">
+        {% endif %}
+        <label>With File</label>
+      </div>
+      
+      <!-- Issue Options -->
+      <div id="issue-options">
+
+        <h1>Issue Options</h1>
+        
+        {% if open_flag %}
+          <input type="checkbox" id="open" name="open" value="open" checked>
+        {% else %}
+          <input type="checkbox" id="open" name="open" value="open">
+        {% endif %}
+        <label class="rb-c-tabs__tab-label">
+          <span class="rb-icon rb-icon-issue-open"> </span> Open
+        </label><br>
+        {% if res_flag %}
+          <input type="checkbox" id="resolved" name="resolved" value="resolved" checked>
+        {% else %}
+          <input type="checkbox" id="resolved" name="resolved" value="resolved">
+        {% endif %}
+        <label class=" rb-c-tabs__tab-label">
+          <span class="rb-icon rb-icon-issue-resolved"> </span> Resolved
+        </label><br>
+        {% if drop_flag %}
+          <input type="checkbox" id="dropped" name="dropped" value="dropped" checked>
+        {% else %}
+          <input type="checkbox" id="dropped" name="dropped" value="dropped">
+        {% endif %}
+        <label class="rb-c-tabs__tab-label">
+          <span class="rb-icon rb-icon-issue-dropped"> </span> Dropped
+        </label><br>
+        {% if verif_flag %}
+          <input type="checkbox" id="verif" name="verif" value="verif" checked>
+        {% else %}
+          <input type="checkbox" id="verif" name="verif" value="verif">
+        {% endif %}
+        <label class="rb-c-tabs__tab-label"> 
+          <span class="rb-icon rb-icon-issue-verifying"></span> Waiting for Verification 
+        </label>
+      </div>
+
+      <!-- Revisions -->
+      <div id="diff_revision_label"></div>
+      <div id="diff_revision_selector">
+        <div id="revision-options">
+          <h1>Revisions</h1>
+          <p>
+            <label for="amount">Revision between: </label>
+            <input type="text" id="amount" name="amount" value = "amount" style="width:50px; border:0; color:#f6931f; font-weight:bold;">
+          </p>
+          <div id="slider-range" style="width:80px;"> </div>
+        </div>
+      </div>
+      
+      <!-- Files -->
+      
+      <div id="file-system">
+        <h1>Files:</h1>
+        {{file_form_html|safe}}
+      </div>
+
+    </div>
+
+    <!-- Update Preview Button -->
+    <input id="update-preview" type="submit" value="Update Preview">
+    </form>
+
+
+    <footer id="botbot" style = "bottom: 0px;">
+      <a onclick="confirmPrint(this)">
+      
+      <!-- Print Button -->
+      <button id="print_but">
+        <span style="color:black; font-size: 18px;"><span class="rb-print-icon"></span>{% trans "Print" %}</span>
+      </button>
+      </a>
+    </footer>
+
+  </div>
+  <!-- End of Left Panel -->
+
+
+  <!-- Start of Right Panel -->
+  <div id="right">
+    Review Request #{{review_request.display_id}} &mdash; {{review_request_status_html}}
+    <!-- Summary -->
+    <table style="border: 2px solid; border-color: #A48E41; width:100%;">
+      <tr>
+        <th style="border: 2px hidden; border-color: #A48E41; text-align: left;">
+          <h2><u>Summary</u></h2>
+        </th>
+      </tr>
+      <tr>
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;">
+          {% review_request_field review_request_details 'summary' %}
+          {{field.as_html|striptags}}
+          {% end_review_request_field %}</td>
+      </tr>
+      <tr>
+        <th style="border: 2px hidden; border-color: #A48E41; text-align: left;">
+          <h2><u>Description</u></h2>
+        </th>
+      </tr>
+      <!-- Description -->
+      <tr>
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;">
+          {% for_review_request_field review_request_details 'main' %}
+          {% if field.field_id == 'description' %}
+          {% if field.as_html|striptags|length > 3%}
+          {{field.as_html}}
+          {% else %}
+          <pre>&lt;This field was left blank by the review submitter&gt;</pre>
+          {% endif %}
+          {% endif %}
+          {% end_for_review_request_field %}
+        </td>
+      </tr>
+      <tr>
+        <!-- Information/Reviewers -->
+        <th style="border: 2px hidden; border-color: #A48E41; text-align: left;">
+          <h2><u>Information/Reviewers</u></h2>
+        </th>
+      </tr>
+      <tr>
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        {% if field.label == "Owner" %}
+        <th style="width: 30%; border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.label}}</th>
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+        <!-- Owner -->
+        {% for_review_request_field review_request_details fieldset %}
+        {% if field.label == "Owner" %}
+        {% if field.as_html|striptags|length > 3%}
+        <td style="width: 70%; border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.as_html|striptags}}</td>
+        {% else %}
+        <td style="width: 70%; border: 2px hidden; border-color: #A48E41; text-align: left;">No Owner Listed</td>
+        {% endif %}
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+      </tr>
+      <tr>
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        <!-- Repository -->
+        {% if field.label == "Repository" %}
+        <th style="width: 30%; border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.label}}</th>
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+        
+        {% for_review_request_field review_request_details fieldset %}
+        {% if field.label == "Repository" %}
+        {% if field.as_html|striptags|length > 3%}
+        <td style="width: 70%; border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.as_html|striptags}}</td>
+        {% else %}
+        <td style="width: 70%; border: 2px hidden; border-color: #A48E41; text-align: left;"> No Repository Listed </td>
+        {% endif %}
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+      </tr>
+      <tr>
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        <!-- Branch -->
+        {% if field.label == "Branch" %}
+        <th style="width: 30%; border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.label}}</th>
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        {% if field.label == "Branch" %}
+        {% if field.as_html|striptags|length > 3%}
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.as_html|striptags}}</td>
+        {% else %}
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;">No branch listed.</td>
+        {% endif %}
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+      </tr>
+      <tr>
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        <!-- Bugs -->
+        {% if field.label == "Bugs" %}
+        <th style="width: 30%; border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.label}}</th>
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        {% if field.label == "Bugs" %}
+        {% if field.as_html|striptags|length > 3%}
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.as_html|striptags}}</td>
+        {% else %}
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;"> No Bugs Listed </td>
+        {% endif %}
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+      </tr>
+      <tr>
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        <!-- Depends On -->
+        {% if field.label == "Depends On" %}
+        <th style="width: 30%; border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.label}}</th>
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        {% if field.label == "Depends On" %}
+        {% if field.as_html|striptags|length > 3%}
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.as_html|striptags}}</td>
+        {% else %}
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;"> No Depends Listed </td>
+        {% endif %}
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+      </tr>
+      <tr>
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        <!-- Groups -->
+        {% if field.label == "Groups" %}
+        <th style="width: 30%; border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.label}}</th>
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        {% if field.label == "Groups" %}
+        {% if field.as_html|striptags|length > 3%}
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.as_html|striptags}}</td>
+        {% else %}
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;"> No Groups Listed </td>
+        {% endif %}
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+      </tr>  
+      <tr>
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        {% if field.label == "People" %}
+        <th style="width: 30%; border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.label}}</th>
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+        {% for_review_request_fieldset review_request_details %}
+        {% if fieldset.fieldset_id != 'main' and fieldset.fieldset_id != 'extra' %}
+    
+        {% for_review_request_field review_request_details fieldset %}
+        <!-- People -->
+        {% if field.label == "People" %}
+        {% if field.as_html|striptags|length > 3%}
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;">{{field.as_html|striptags}}</td>
+        {% else %}
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;"> No People Listed </td>
+        {% endif %}
+        {% endif %}
+        {% end_for_review_request_field %}
+        {% endif %}
+        {% end_for_review_request_fieldset %}
+      </tr>
+      <tr>
+        <th style="text-align: left;">
+          <h2><u>Testing Done</u></h2>
+        </th>
+      </tr>
+      <tr>
+        <td style="border: 2px hidden; border-color: #A48E41; text-align: left;">
+          {% for_review_request_field review_request_details 'main' %}
+          {% if field.field_id == 'testing_done' %}
+          {% if field.as_html|striptags|length > 3%}
+          {{field.as_html}}
+          {% else %}
+          <pre>&lt;This field was left blank by the review submitter&gt;</pre>
+          {% endif %}
+          {% endif %}
+          {% end_for_review_request_field %}
+        </td>
+      </tr>
+    </table>
+
+<table style="border: 2px solid; border-color: #A48E41; width:100%;">
+  <tr>
+    <th style="text-align: left;">
+      <h2><u>Commits</u></h2>
+    </th>
+  </tr>
+    {% for commit in diff_context.commits %}
+    <tr>
+      <td style="width: 30%; border: 2px hidden; border-color: #A48E41;">{{commit.author_name}}</td>
+      <td style="width: 70%; border: 2px hidden; border-color: #A48E41; text-align: left;">{{commit.commit_message}}</td>
+    </tr>
+    {% endfor %}
+</table>
+ 
+    {% if open_flag or res_flag or drop_flag or verif_flag %}
+<table style="border: 2px solid; border-color: #A48E41; width:100%;">
+  <tr>
+    <th style="border: 2px solid; border-color: #A48E41; text-align: left;">
+      <h2><u>Issues</u></h2>
+    </th>
+  </tr>
+    {% endif %}
+    {% for issue_type in issue_types %}
+      {% if issue_flag_dict|getitem:issue_type %}
+        <tr><th style="text-align: left;"><span class="rb-icon {{issue_type|issue_status_icon}}"></span> {{issue_types|getitem:issue_type}} ({{issues|getitem:issue_type|length}}): <br></th></tr>
+        <tr><th style="text-align: left; font-weight: normal;">{% for issue in issues|getitem:issue_type %}
+          {{issue.text|render_markdown:issue.rich_text|striptags|truncatewords:20}} 
+          {{issue.review_obj.user}} 
+          <time class="timesince" datetime="{{issue.timestamp|date:'c'}}">{{issue.timestamp}}</time> 
+          <br> 
+        {% empty %} 
+        There are no issues with this issue status. <br>
+        {% endfor %}</th></tr>
+      {% endif %}
+    {% endfor %}
+    </table>
+    <table style="border: 2px solid; border-color: #A48E41; width:100%;">
+      <tr>
+        <th style="text-align: left;">
+          <h2><u>General Comments</u></h2>
+        </th>
+      </tr>
+    {% for entry in comments_general %} 
+      <tr><th style="border: 2px ; border-color: #A48E41;  padding-left: 20px; padding-right: 20px; text-align: left; font-weight: normal;">{{entry|getattr:'review_obj'|getattr:'_user_cache'}}
+
+      <time class="timesince" datetime="{{entry.timestamp|date:'c'}}">{{entry.timestamp}}</time><br>
+      </dt>
+      
+      <dd>
+      <pre> {{entry.text}} </pre> <br>
+      {% if entry|getattr:'_replies' %}
+      <div class="replay">
+        Replies:<br>
+        {% endif %}
+        
+        {% for reply in entry|getattr:'_replies' %} 
+          {{reply|getattr:'review_obj'|getattr:'_user_cache'}}
+          <time class="timesince" datetime="{{reply.timestamp|date:'c'}}">{{reply.timestamp}}</time><br>
+          {{reply.text}} <br>
+        {% endfor %}
+
+      </dd>
+
+      <dd>
+      <br>
+      {% if entry.issue_status %}
+      Marked as issue: {{issue_types|getitem:entry.issue_status}} <br>
+      {% endif %}
+
+      </th></dd>
+
+    {% empty %} 
+      <th style="border: 2px hidden; border-color: #A48E41;  padding-left: 20px; padding-right: 20px; text-align: left; font-weight: normal;">There are no general comments for this review<br></th></tr>
+    {% endfor %}
+      <tr>
+        <th style="text-align: left;">
+          <h2><u>File Attachment Comments</u></h2>
+        </th>
+      </tr>
+
+      <dt>
+    {% for entry in comments_file_attachment %}
+      <tr>
+        <th style="border: 2px solid; border-color: #A48E41; padding-left: 20px; padding-right: 20px; text-align: left; font-weight: normal;">{{entry|getattr:'review_obj'|getattr:'_user_cache'}}
+      <time class="timesince" datetime="{{entry.timestamp|date:'c'}}">{{entry.timestamp}}</time><br>
+      {{entry.get_absolute_url}} 
+      
+      {%   if entry.diff_against_file_attachment %}
+      {%    with revision1=entry.diff_against_file_attachment.attachment_revision revision2=entry.file_attachment.attachment_revision %}
+          (Revisions {{revision1}} - {{revision2}}):
+      {%    endwith %}
+      {%   else %}
+      {%    with revision=entry.file_attachment.attachment_revision %}
+          (Revision {{revision}}):
+      {%    endwith %}
+      {%   endif %}
+      {{entry.get_link_text}}
+      <br>
+    </dt>
+    <dd>
+      <pre>{{entry.text}}</pre>
+      <br>
+      {%  with entry.thumbnail as thumbnail %}
+      {%   if thumbnail %}
+        {{thumbnail|default:''|safe}}
+      {%   endif %}
+      {%  endwith %}
+      <br>
+      {% if entry|getattr:'_replies' %}
+        Replies:<br>
+      {% endif %}
+      {% for reply in entry|getattr:'_replies' %} 
+        {{reply|getattr:'review_obj'|getattr:'_user_cache'}}
+        <time class="timesince" datetime="{{reply.timestamp|date:'c'}}">{{reply.timestamp}}</time><br>
+        {{reply.text}} <br>
+      {% endfor %}
+      <br>
+      {% if entry.issue_status %}
+      Marked as issue: {{issue_types|getitem:entry.issue_status}}<br> <br>
+      {% endif %}
+      </th>
+    {% empty %} 
+      <th style="border: 2px hidden; border-color: #A48E41; padding-left: 20px; padding-right: 20px; text-align: left; font-weight: normal;">There are no file attachment comments for this review <br></th></tr>
+    {% endfor %}
+  </dd>
+
+  {% if not with_file_flag %}
+      <tr>
+        <th style="text-align: left;">
+          <h2><u>Code Comments</u></h2>
+        </th>
+      </tr>
+    {% for entry in comments_code %} 
+    <dt>
+      <tr>
+        <th style="border: 2px hidden; padding-left: 20px; padding-right: 20px; border-color: #A48E41; text-align: left; font-weight: normal;">{{entry|getattr:'review_obj'|getattr:'_user_cache'}}
+      <time class="timesince" datetime="{{entry.timestamp|date:'c'}}">{{entry.timestamp}}</time><br>
+      {{entry.filediff.dest_file_display}} 
+      Line {{entry.first_line}} 
+      {% if entry.interfilediff %}
+        {% with revision1=entry.filediff.diffset.revision revision2=entry.interfilediff.diffset.revision %}
+          (Diff revisions {{revision1}} - {{revision2}})
+        {% endwith %}
+      {% else %}
+        {% with revision=entry.filediff.diffset.revision %}
+          (Diff revision {{revision}})
+        {% endwith %}
+      {% endif %} <br>
+    </dt>
+
+    <dd>
+      <pre>{{entry.text}}</pre> <br>
+    
+      {% if entry|getattr:'_replies' %}
+        Replies:<br>
+      {% endif %}
+      {% for reply in entry|getattr:'_replies' %} 
+        {{reply|getattr:'review_obj'|getattr:'_user_cache'}}
+        <time class="timesince" datetime="{{reply.timestamp|date:'c'}}">{{reply.timestamp}}</time><br>
+        {{reply.text}} <br>
+      {% endfor %}
+      {% if entry.issue_status %}
+      Marked as issue: {{issue_types|getitem:entry.issue_status}}<br><br>
+      {% endif %}
+      </th>
+    {% empty %} 
+        <th style="border: 2px hidden; border-color: #A48E41;  padding-left: 20px; padding-right: 20px; text-align: left; font-weight: normal;">There are no code comments for this review <br></th></tr>
+    {% endfor %}
+  </dd>
+  {% endif %}
+    </table>
+    <table style="border: 2px solid; border-color: #A48E41; width:100%;">
+      <tr>
+        <th style="text-align: left;">
+          <h2><u>File Diffs</u></h2>
+          <p style+="text-align: center;">Comparing from Revision {{slider_start}} to Revision {{slider_end}}</p>
+        </th>
+      </tr>
+    {% for key, value in data.items %}
+      {% if issues_flag_default or value.filename in file_dests and value.filename in checked_files%}
+        <tr><th style="border: 2px solid; border-color: #A48E41; padding-left: 20px; padding-right: 20px; text-align: left; font-weight: normal;"><h3> {{value.filename}} </h3>
+        <pre> {{value.raw_diff}} </pre></th></tr>
+      {% endif %}
+    {% endfor %}
+    </table>
+
+
+</div>
+  <!-- End of Right Panel -->
+
+</div>
+{% endblock %}

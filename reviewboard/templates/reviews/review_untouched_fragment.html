@@ -1,0 +1,8 @@
+{% for chunk in chunks %}
+    <tr>
+        <th>{{chunk.index}}</th>
+        <td>
+            <pre><span>{{chunk.lines}}</span></pre>
+        </td>
+    </tr>
+{% endfor %}

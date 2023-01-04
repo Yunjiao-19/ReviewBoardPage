@@ -1,0 +1,125 @@
+@import (reference) "../defs.less";
+
+
+@img_base: '../../images';
+
+.code-header{
+    color: #575012;
+    font-size: 160%;
+    margin: 1em 0;
+}
+
+.breadcrumbs-container{
+    font-size: 120%;
+    margin-bottom: 15px;
+    a {
+        cursor: pointer;
+        color: #575012;
+    }
+}
+
+a{
+    cursor: pointer;
+}
+
+.highlight-warning{
+    display: inline-block;
+    margin-bottom: 20px;
+    background-color: #fc9834;
+    width:fit-content;
+    padding: 4px;
+    border-radius: 5px;
+    color: black;
+    &:hover{
+        background-color: #ffb66c;
+    }
+}
+
+.code_browser_list{
+    table {
+        border-collapse: collapse;
+        border: @review-request-field-border;
+        padding: 0;
+        width: 100%;
+    
+        tr {
+            &:first-child td {
+            border-top: 0;
+            }
+        }
+
+        td {
+            background: #FDFDFD;
+            padding: 0.6em;
+            margin: 0;
+            border-top: @review-request-field-table-divider-border;
+            vertical-align: top;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            &.touched-info {
+                width: 0.2em;
+                .touched-icon{
+                    border-radius: 50%;
+                    display: inline-block;
+                    margin-top: 2px;
+                    width: 12px;
+                    height: 12px;
+                    background-color: rgb(113, 192, 190);
+                }
+            }
+    
+            &.diff-chunks-cell {
+            color: #888;
+            text-align: right;
+            width: 70%;
+            }
+    
+    
+            &.diff-file-info {
+            padding-left: 0.3em;
+            white-space: nowrap;
+            width: 30%;
+    
+            .diff-file-rename {
+                color: #888;
+                display: block;
+                font-size: 90%;
+                font-style: italic;
+                padding: 1em 0 0 0;
+            }
+            }
+    
+            a {
+            color: @link-color;
+            text-decoration: none;
+    
+            &:hover {
+                text-decoration: underline;
+                cursor: pointer;
+            }
+    
+            &.dimmed {
+                color: #ABABAB;
+            }
+            }
+    
+            .diff-chunks {
+            max-height: 2.5em;
+            overflow: hidden;
+            text-align: right;
+    
+            a {
+                border-radius: 50%;
+                display: inline-block;
+                margin: 3px 2px 0 2px;
+                width: 8px;
+                height: 8px;
+    
+    
+            }
+            }
+        }
+    }
+    
+}

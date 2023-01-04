@@ -1,0 +1,64 @@
+
+{% extends "reviews/reviewable_base.html" %}
+{% load i18n djblets_deco djblets_js pipeline reviewtags staticfiles %}
+
+{% block title %}{{review_request_details.summary}} | {% trans "Review Request" %}{% endblock %}
+
+{% block css %}
+{{block.super}}
+
+{%  if siteconfig_settings.diffviewer_show_trailing_whitespace %}
+<style type="text/css">
+  .ew { background: #ee3434; }
+</style>
+{%  endif %}
+{% endblock css %}
+
+
+{% block js-page-view-type %}RB.ReviewRequestPage.ReviewRequestPageView{% endblock %}
+{% block js-page-model-type %}RB.ReviewRequestPage.ReviewRequestPage{% endblock %}
+{% block js-page-model-attrs %}{
+    updatesURL: "{% url 'review-request-updates' review_request.display_id %}",
+    {% reviewable_page_model_data %}
+}{% endblock js-page-model-attrs%}
+
+{% comment Team17 %}New read status history tag template{% endcomment %}
+{% block content %}
+<div id="review-request">
+ <div id="review-request-banners"></div>
+{% display_review_request_trophies review_request %}
+ <div class="review-request">
+{%   include "reviews/review_request_header.html" %}
+  <div class="review-request-body">
+    <table style="width:100%">
+      <tr>
+        <td>Revision #</td>
+        <td>File Name</td>
+        <td>Previous Status</td>
+        <td>Current Status</td>
+        <td>Timestamp</td>
+      </tr>
+      {%for history in histories%}
+      <tr>
+        <td>{{history.revision}}</td>
+        <td>{{history.name}}</td>
+        <td>{%if history.prev == 0%} unread 
+          {% elif history.prev == 1%} tentative 
+          {% elif history.prev == 2%} read 
+          {%endif%}</td>
+          <td>{%if history.curr == 0%} unread 
+            {% elif history.curr == 1%} tentative 
+            {% elif history.curr == 2%} read 
+            {%endif%}</td>
+        <td>{{history.time}}</td>
+      </tr>
+      {%endfor%}
+    </table>
+  </div>
+ </div>
+</div>
+
+<div id="reviews">
+{%  render_review_request_entries entries.initial %}
+</div>
+{% endblock content %}

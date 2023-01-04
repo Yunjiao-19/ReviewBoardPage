@@ -1,0 +1,157 @@
+.content{
+display: flex;
+align-items: flex-end;
+}
+
+.review-request-header {
+  visibility: hidden;
+}
+
+#view_controls {
+  visibility: hidden;
+}
+
+#left {
+  position:absolute;
+  align-items: relative;
+  background: #FEFBE5;
+  width: 30%;
+  height: 100%;
+  overflow: scroll;
+  border: solid #A48E41 4px;
+}
+
+#right {
+  position: relative;
+  background: #FEFBE5;
+  // margin-left: 30%;
+  width: 70%;
+  // height: max-content;
+  right: 0;
+  left: 30%;
+  overflow: auto;
+  border: solid #A48E41 4px;
+}
+#printReview {
+  background: #FFFEF8;
+  border: solid #A48E41 4px;
+  border-radius: 9px;
+  margin: -4px -4px 0px -4px;
+}
+
+#x_but{
+  background: #FFFEF8;
+  border: none;
+}
+
+#top{
+  position:absolute;
+  z-index: 100;
+  margin: -4px 0px 0px -4px;
+  width: 99%;
+  background: #FFFEF8;
+  border: solid #A48E41 4px;
+  border-radius: 9px;
+}
+
+#botbot {
+  position: fixed;
+  z-index: 100;
+  margin: 4px 0px 0px -4px;
+  width: 99%;
+  // background-color: #FEFBE5;
+  text-align: center;
+  border: solid #A48E41 4px;
+  background: #FFFEF8;
+  border-radius: 9px;
+}
+
+#print_but {
+  background: #E3D7AD;
+  border: solid #A48E41;
+  border-radius: 9px;
+  margin: 1px 0px 1px 0px;
+}
+
+#bot{
+  margin: 50px 0px 80px 10px;
+  background: #FEFBE5;
+}
+
+
+.rb-print-icon {
+    background-repeat: no-repeat;
+    display: inline-block;
+    overflow: hidden;
+    text-indent: -99999px;
+    vertical-align: middle;
+    background-image: url('../../images/printicon.png');
+    background-size: cover;
+    width: 16px;
+    height: 16px;
+    margin: -4px 4px 0px 0px;
+}
+
+/* Update preview button styling */
+#update-preview{
+  background: #E3D7AD;
+  border: solid #A48E41;
+  border-radius: 9px;
+  position: relative;
+  left: 45%;
+  -ms-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+
+/* Tool tip container */
+.tip {
+  position: relative;
+  display: inline-block;
+  // border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tip .tiptext {
+  visibility: hidden;
+  width: 200px;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  text-align: center;
+  padding: 5px;
+  border-radius: 6px;
+  
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 100;
+  top: -15px;
+  left: 110%;
+}
+
+.tip .tiptext::after {
+  content: " ";
+  position: absolute;
+  top: 50%;
+  right: 100%; /* To the left of the tooltip */
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent black transparent transparent;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tip:hover .tiptext {
+  visibility: visible;
+}
+
+#diff{
+  border-left-style:solid;
+	border-left-width:15px;
+	border-left-color:#A48E41;
+  background-color: #E3D7AD;
+  text-align:center;
+
+}
+
+#subt{
+text-decoration:underline;
+}

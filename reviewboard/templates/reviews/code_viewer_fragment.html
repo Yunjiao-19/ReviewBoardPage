@@ -1,0 +1,10 @@
+<tbody id="chunk0.1" class="equal">
+  {% for chunk in chunks %}
+    <tr line={{chunk.index}}>
+      <th>{{chunk.index}}</th>
+      <td style="text-align: left">
+        <pre>{{chunk.lines}}</pre>
+      </td>
+    </tr>
+  {% endfor %}
+</tbody>
